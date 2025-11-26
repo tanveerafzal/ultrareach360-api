@@ -1,0 +1,68 @@
+### Send SMS - Success Case
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+12345678901",
+  "body": "Hello John, this is your welcome message."
+}
+
+### Send SMS - Missing Fields
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+12345678901"
+}
+
+### Send SMS - Invalid Phone Number
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "invalid-phone",
+  "body": "Hello John, this is your welcome message."
+}
+
+### Send SMS - Phone with Formatting
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+1 (234) 567-8901",
+  "body": "Hello John, this is your welcome message."
+}
+
+### Send SMS - Long Message
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+12345678901",
+  "body": "Dear Customer, we wanted to inform you about important updates to your account. Please review these changes carefully and contact us if you have any questions or concerns. Thank you for being a valued customer."
+}
+
+### Send SMS - Multiple Recipients (requires multiple calls)
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+12345678901",
+  "body": "Reminder: Your appointment is tomorrow at 3 PM."
+}
+
+###
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+19876543210",
+  "body": "Reminder: Your appointment is tomorrow at 3 PM."
+}

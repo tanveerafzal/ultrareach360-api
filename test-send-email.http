@@ -1,0 +1,42 @@
+### Send Email - Success Case
+POST http://localhost:3001/v1/messaging/send-email
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "john@example.com",
+  "subject": "Welcome",
+  "body": "Hello John, this is your welcome email."
+}
+
+### Send Email - Missing Fields
+POST http://localhost:3001/v1/messaging/send-email
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "john@example.com",
+  "subject": "Welcome"
+}
+
+### Send Email - Invalid Email
+POST http://localhost:3001/v1/messaging/send-email
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "invalid-email",
+  "subject": "Welcome",
+  "body": "Hello John, this is your welcome email."
+}
+
+### Send Email - Multi-line Body
+POST http://localhost:3001/v1/messaging/send-email
+Content-Type: application/json
+
+{
+  "businessGroup": "The North West Company",
+  "to": "john@example.com",
+  "subject": "Welcome to Our Platform",
+  "body": "Dear John,\n\nWelcome to our platform!\n\nWe're excited to have you on board.\n\nBest regards,\nThe Team"
+}
