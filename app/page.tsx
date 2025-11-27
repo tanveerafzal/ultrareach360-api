@@ -276,8 +276,6 @@ export default function Home() {
                 <li>The token expires in 7 days</li>
                 <li>All endpoints use JSON for request and response bodies</li>
                 <li>Business group name is prefixed to all email subjects and SMS messages</li>
-                <li>Email service requires SendGrid API key configuration (SENDGRID_API_KEY, SENDGRID_FROM_EMAIL)</li>
-                <li>SMS service requires Twilio configuration (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)</li>
                 <li>Phone numbers should be in E.164 format (e.g., +1234567890)</li>
                 <li>SMS messages are limited to 1600 characters</li>
               </ul>
