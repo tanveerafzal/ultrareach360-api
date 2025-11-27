@@ -11,46 +11,29 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { username, password, partner } = body;
+    const { username, password, apiKey } = body;
 
     // Validate required fields
-    if (!username || !password || !partner) {
+    if (!username || !password || !apiKey) {
       return NextResponse.json(
         {
           success: false,
-          error: "Please provide username, password, and partner"
+          error: "Please provide username, password, and apiKey"
         },
         { status: 400 }
       );
     }
 
-    // Find the partner by email
-    const partnerUser = await User.findOne({
-      email: partner.toLowerCase(),
-      role: "partner"
-    });
-
-    if (!partnerUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid partner"
-        },
-        { status: 401 }
-      );
-    }
-
-    // Find the user by email/username and verify they belong to this partner
+    // Find the user by email/username
     const user = await User.findOne({
-      email: username.toLowerCase(),
-      partnerId: partnerUser._id
+      email: username.toLowerCase()
     }).select("+password");
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid credentials or you don't belong to this partner"
+          error: "Invalid credentials"
         },
         { status: 401 }
       );
@@ -81,12 +64,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate API key
+    if (!user.apiAccess.apiKey || user.apiAccess.apiKey !== apiKey) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid API key"
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get partner information if user has a partnerId
+    let partnerInfo = null;
+    if (user.partnerId) {
+      const partnerUser = await User.findById(user.partnerId);
+      if (partnerUser) {
+        partnerInfo = {
+          id: partnerUser._id.toString(),
+          name: partnerUser.name,
+          email: partnerUser.email
+        };
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       {
         userId: user._id.toString(),
         email: user.email,
-        partnerId: partnerUser._id.toString(),
+        partnerId: user.partnerId?.toString() || null,
         role: user.role,
         plan: user.plan
       },
@@ -105,11 +112,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           plan: user.plan,
           role: user.role,
-          partner: {
-            id: partnerUser._id.toString(),
-            name: partnerUser.name,
-            email: partnerUser.email
-          }
+          partner: partnerInfo
         }
       },
       { status: 200 }

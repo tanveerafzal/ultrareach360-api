@@ -1,6 +1,17 @@
 ### Send SMS - Success Case
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "businessGroup": "The North West Company",
+  "to": "+12345678901",
+  "body": "Hello John, this is your welcome message."
+}
+
+### Send SMS - Missing Authorization
+POST http://localhost:3001/v1/messaging/send-sms
+Content-Type: application/json
 
 {
   "businessGroup": "The North West Company",
@@ -11,6 +22,7 @@ Content-Type: application/json
 ### Send SMS - Missing Fields
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",
@@ -20,6 +32,7 @@ Content-Type: application/json
 ### Send SMS - Invalid Phone Number
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",
@@ -30,6 +43,7 @@ Content-Type: application/json
 ### Send SMS - Phone with Formatting
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",
@@ -40,6 +54,7 @@ Content-Type: application/json
 ### Send SMS - Long Message
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",
@@ -50,6 +65,7 @@ Content-Type: application/json
 ### Send SMS - Multiple Recipients (requires multiple calls)
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",
@@ -60,6 +76,7 @@ Content-Type: application/json
 ###
 POST http://localhost:3001/v1/messaging/send-sms
 Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
   "businessGroup": "The North West Company",

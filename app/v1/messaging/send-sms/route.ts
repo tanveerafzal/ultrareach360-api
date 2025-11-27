@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
+import { validateToken } from "@/lib/auth";
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || "";
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || "";
@@ -12,9 +13,27 @@ if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log("\n=== New SMS Request ===");
+  console.log("Timestamp:", new Date().toISOString());
+
+  // Validate JWT token
+  const authResult = validateToken(request);
+  if (!authResult.success) {
+    console.log("Authentication failed:", authResult.error);
+    return authResult.response!;
+  }
+
+  console.log("Authenticated user:", authResult.user!.email);
+
   try {
     const body = await request.json();
     const { businessGroup, to, body: smsBody } = body;
+
+    console.log("Request body:", {
+      businessGroup,
+      to,
+      bodyLength: smsBody?.length
+    });
 
     // Validate required fields
     if (!businessGroup || !to || !smsBody) {

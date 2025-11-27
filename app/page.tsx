@@ -33,7 +33,7 @@ export default function Home() {
 {`{
   "username": "user@example.com",
   "password": "your-password",
-  "partner": "partner@example.com"
+  "apiKey": "your-api-key-from-dashboard"
 }`}
                 </pre>
 
@@ -69,7 +69,7 @@ export default function Home() {
                     <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
 {`{
   "success": false,
-  "error": "Please provide username, password, and partner"
+  "error": "Please provide username, password, and apiKey"
 }`}
                     </pre>
                   </div>
@@ -79,6 +79,15 @@ export default function Home() {
 {`{
   "success": false,
   "error": "Invalid credentials"
+}`}
+                    </pre>
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-red-600">401 Unauthorized:</span>
+                    <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
+{`{
+  "success": false,
+  "error": "Invalid API key"
 }`}
                     </pre>
                   </div>
@@ -114,7 +123,17 @@ export default function Home() {
                     <code className="text-sm font-mono text-gray-900">
                       /v1/messaging/send-email
                     </code>
+                    <span className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded ml-2">
+                      Requires Authentication
+                    </span>
                   </div>
+
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                    Headers:
+                  </h4>
+                  <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto mb-4">
+{`Authorization: Bearer <your-jwt-token-from-login>`}
+                  </pre>
 
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     Request Body:
@@ -148,6 +167,24 @@ export default function Home() {
                     Error Responses:
                   </h4>
                   <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-semibold text-red-600">401 Unauthorized:</span>
+                      <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
+{`{
+  "success": false,
+  "error": "Missing authorization token. Please include 'Authorization: Bearer <token>' header."
+}`}
+                      </pre>
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-red-600">401 Unauthorized:</span>
+                      <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
+{`{
+  "success": false,
+  "error": "Token has expired. Please login again."
+}`}
+                      </pre>
+                    </div>
                     <div>
                       <span className="text-sm font-semibold text-red-600">400 Bad Request:</span>
                       <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
@@ -190,7 +227,17 @@ export default function Home() {
                     <code className="text-sm font-mono text-gray-900">
                       /v1/messaging/send-sms
                     </code>
+                    <span className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded ml-2">
+                      Requires Authentication
+                    </span>
                   </div>
+
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                    Headers:
+                  </h4>
+                  <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto mb-4">
+{`Authorization: Bearer <your-jwt-token-from-login>`}
+                  </pre>
 
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     Request Body:
@@ -225,6 +272,24 @@ export default function Home() {
                     Error Responses:
                   </h4>
                   <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-semibold text-red-600">401 Unauthorized:</span>
+                      <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
+{`{
+  "success": false,
+  "error": "Missing authorization token. Please include 'Authorization: Bearer <token>' header."
+}`}
+                      </pre>
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-red-600">401 Unauthorized:</span>
+                      <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
+{`{
+  "success": false,
+  "error": "Token has expired. Please login again."
+}`}
+                      </pre>
+                    </div>
                     <div>
                       <span className="text-sm font-semibold text-red-600">400 Bad Request:</span>
                       <pre className="bg-gray-900 text-red-400 p-2 rounded text-sm mt-1">
@@ -271,9 +336,10 @@ export default function Home() {
                 Notes:
               </h2>
               <ul className="list-disc list-inside space-y-2 text-gray-700">
-                <li>The user must belong to the specified partner</li>
-                <li>The user must have API access status set to "approved"</li>
-                <li>The token expires in 7 days</li>
+                <li>Users must have API access status set to "approved"</li>
+                <li>API key is provided in the dashboard after approval</li>
+                <li>The JWT token expires in 7 days</li>
+                <li>Messaging endpoints require authentication - include the JWT token in the Authorization header</li>
                 <li>All endpoints use JSON for request and response bodies</li>
                 <li>Business group name is prefixed to all email subjects and SMS messages</li>
                 <li>Phone numbers should be in E.164 format (e.g., +1234567890)</li>
