@@ -140,7 +140,7 @@ export default function Home() {
                   </h4>
                   <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
 {`{
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "john@example.com",
   "subject": "Welcome",
   "body": "Hello John, this is your welcome email."
@@ -155,9 +155,9 @@ export default function Home() {
   "success": true,
   "message": "Email sent successfully",
   "data": {
-    "businessGroup": "The North West Company",
+    "businessGroup": "The Example Company",
     "to": "john@example.com",
-    "subject": "[The North West Company] Welcome",
+    "subject": "[The Example Company] Welcome",
     "sentAt": "2025-11-27T12:00:00.000Z"
   }
 }`}
@@ -244,7 +244,7 @@ export default function Home() {
                   </h4>
                   <pre className="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
 {`{
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "+12345678901",
   "body": "Hello John, this is your welcome message."
 }`}
@@ -258,7 +258,7 @@ export default function Home() {
   "success": true,
   "message": "SMS sent successfully",
   "data": {
-    "businessGroup": "The North West Company",
+    "businessGroup": "The Example Company",
     "to": "+12345678901",
     "messageId": "SM1234567890abcdef",
     "status": "queued",

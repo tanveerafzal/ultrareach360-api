@@ -4,7 +4,7 @@ Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "john@example.com",
   "subject": "Welcome",
   "body": "Hello John, this is your welcome email."
@@ -15,7 +15,7 @@ POST http://localhost:3001/v1/messaging/send-email
 Content-Type: application/json
 
 {
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "john@example.com",
   "subject": "Welcome",
   "body": "Hello John, this is your welcome email."
@@ -27,7 +27,7 @@ Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "john@example.com",
   "subject": "Welcome"
 }
@@ -38,7 +38,7 @@ Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "invalid-email",
   "subject": "Welcome",
   "body": "Hello John, this is your welcome email."
@@ -50,7 +50,7 @@ Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 {
-  "businessGroup": "The North West Company",
+  "businessGroup": "The Example Company",
   "to": "john@example.com",
   "subject": "Welcome to Our Platform",
   "body": "Dear John,\n\nWelcome to our platform!\n\nWe're excited to have you on board.\n\nBest regards,\nThe Team"
