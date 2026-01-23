@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { Logger, createRequestLogger } from "@/lib/logger";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
@@ -22,13 +23,16 @@ export interface AuthResult {
  * Validates JWT token from Authorization header
  * Returns authenticated user data if valid, or error response if invalid
  */
-export function validateToken(request: NextRequest): AuthResult {
+export function validateToken(request: NextRequest, logger?: Logger): AuthResult {
+  // Use provided logger or create a new one
+  const log = logger || createRequestLogger(request);
+
   try {
     // Get Authorization header
     const authHeader = request.headers.get("authorization");
 
     if (!authHeader) {
-      console.log("Authentication failed: No Authorization header");
+      log.authFailure("Missing Authorization header");
       return {
         success: false,
         error: "Missing authorization token",
@@ -44,7 +48,7 @@ export function validateToken(request: NextRequest): AuthResult {
 
     // Check Bearer format
     if (!authHeader.startsWith("Bearer ")) {
-      console.log("Authentication failed: Invalid Authorization format");
+      log.authFailure("Invalid Authorization format", { format: authHeader.substring(0, 20) });
       return {
         success: false,
         error: "Invalid authorization format",
@@ -62,7 +66,7 @@ export function validateToken(request: NextRequest): AuthResult {
     const token = authHeader.substring(7); // Remove "Bearer " prefix
 
     if (!token) {
-      console.log("Authentication failed: Empty token");
+      log.authFailure("Empty token provided");
       return {
         success: false,
         error: "Empty token",
@@ -76,22 +80,20 @@ export function validateToken(request: NextRequest): AuthResult {
       };
     }
 
-    console.log("Validating JWT token...");
-    console.log("Token prefix:", token.substring(0, 20) + "...");
+    log.debug("Validating JWT token", { tokenPrefix: token.substring(0, 20) + "..." });
 
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
 
-    console.log("Token validated successfully for user:", decoded.email);
+    log.authSuccess(decoded.userId, decoded.email);
 
     return {
       success: true,
       user: decoded
     };
   } catch (error: any) {
-    console.error("Token validation error:", error.message);
-
     if (error.name === "TokenExpiredError") {
+      log.authFailure("Token expired", { expiredAt: error.expiredAt });
       return {
         success: false,
         error: "Token expired",
@@ -106,6 +108,7 @@ export function validateToken(request: NextRequest): AuthResult {
     }
 
     if (error.name === "JsonWebTokenError") {
+      log.authFailure("Invalid token", { error: error.message });
       return {
         success: false,
         error: "Invalid token",
@@ -119,6 +122,7 @@ export function validateToken(request: NextRequest): AuthResult {
       };
     }
 
+    log.error("Token validation failed", error);
     return {
       success: false,
       error: "Authentication failed",
