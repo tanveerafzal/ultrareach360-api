@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import sgMail from "@sendgrid/mail";
 import { validateToken } from "@/lib/auth";
-import { createRequestLogger, logger as globalLogger } from "@/lib/logger";
-
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
-const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "";
-
-// Log configuration at startup (once)
-globalLogger.info("SendGrid configuration loaded", {
-  apiKeyExists: !!SENDGRID_API_KEY,
-  apiKeyLength: SENDGRID_API_KEY.length,
-  fromEmail: SENDGRID_FROM_EMAIL || "NOT_SET",
-});
-
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-}
+import { emailService } from "@/lib/email/email-service";
 
 export async function POST(request: NextRequest) {
   const requestId = request.headers.get("x-request-id") || undefined;
@@ -76,13 +61,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if SendGrid is configured
-    if (!SENDGRID_API_KEY || !SENDGRID_FROM_EMAIL) {
-      logger.error("SendGrid not configured", null, {
-        hasApiKey: !!SENDGRID_API_KEY,
-        hasFromEmail: !!SENDGRID_FROM_EMAIL,
-      });
-      logger.requestEnd(500, { reason: "sendgrid_not_configured" });
+    // Check if any email provider is configured
+    const configuredProviders = emailService.getConfiguredProviders();
+    const fromEmail = emailService.getDefaultFromEmail();
+
+    if (configuredProviders.length === 0 || !fromEmail) {
+      console.log("Configuration error: No email provider configured");
+      console.log("Configured providers:", configuredProviders);
+      console.log("From Email present:", !!fromEmail);
       return NextResponse.json(
         {
           success: false,
@@ -92,12 +78,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.debug("Validation passed, preparing email");
+    console.log("Validation passed. Preparing email message...");
+    console.log("Available providers:", configuredProviders);
 
     // Prepare email message
     const msg = {
       to: to,
-      from: SENDGRID_FROM_EMAIL,
+      from: fromEmail,
       subject: `[${businessGroup}] ${subject}`,
       text: emailBody,
       html: `
@@ -124,19 +111,15 @@ export async function POST(request: NextRequest) {
       subject: msg.subject,
     });
 
-    const result = await sgMail.send(msg);
+    // Send email using email service
+    console.log("Attempting to send email...");
+    const result = await emailService.send(msg);
 
-    logger.externalServiceSuccess("SendGrid", "send", {
-      statusCode: result[0]?.statusCode,
-      messageId: result[0]?.headers?.["x-message-id"],
-    });
+    if (!result.success) {
+      throw new Error(result.error || "Failed to send email");
+    }
 
-    logger.info("Email sent successfully", {
-      businessGroup,
-      to,
-      subject: msg.subject,
-    });
-    logger.requestEnd(200, { reason: "success" });
+    console.log("Email sent successfully via", result.provider);
 
     return NextResponse.json(
       {
@@ -146,41 +129,32 @@ export async function POST(request: NextRequest) {
           businessGroup,
           to,
           subject: msg.subject,
-          sentAt: new Date().toISOString()
+          sentAt: new Date().toISOString(),
+          provider: result.provider,
+          messageId: result.messageId
         }
       },
       { status: 200 }
     );
   } catch (error: any) {
-    // Extract SendGrid-specific error details
-    let errorMessage = "Failed to send email";
-    let statusCode = 500;
-    const errorDetails: any = {
-      type: error.constructor.name,
-      message: error.message,
-      code: error.code,
-    };
-
-    if (error.response) {
-      errorMessage = error.response.body?.errors?.[0]?.message || errorMessage;
-      statusCode = error.response.statusCode || statusCode;
-      errorDetails.sendgridStatusCode = error.response.statusCode;
-      errorDetails.sendgridErrors = error.response.body?.errors;
-    }
-
-    logger.externalServiceError("SendGrid", "send", error, errorDetails);
-    logger.requestError(statusCode, error, {
-      endpoint: "/v1/messaging/send-email",
-      sendgridStatusCode: errorDetails.sendgridStatusCode,
-    });
+    console.error("\n=== Email Sending Error ===");
+    console.error("Error type:", error.constructor.name);
+    console.error("Error message:", error.message);
+    console.error("Error code:", error.code);
+    console.error("Full Error Object:", JSON.stringify(error, null, 2));
+    console.error("Stack Trace:", error.stack);
+    console.error("========================\n");
 
     return NextResponse.json(
       {
         success: false,
-        error: errorMessage,
-        details: errorDetails
+        error: error.message || "Failed to send email",
+        details: {
+          message: error.message,
+          code: error.code
+        }
       },
-      { status: statusCode }
+      { status: 500 }
     );
   }
 }
