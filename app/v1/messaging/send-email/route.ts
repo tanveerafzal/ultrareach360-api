@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 import { emailService } from "@/lib/email/email-service";
+import { createRequestLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   const requestId = request.headers.get("x-request-id") || undefined;
@@ -66,9 +67,11 @@ export async function POST(request: NextRequest) {
     const fromEmail = emailService.getDefaultFromEmail();
 
     if (configuredProviders.length === 0 || !fromEmail) {
-      console.log("Configuration error: No email provider configured");
-      console.log("Configured providers:", configuredProviders);
-      console.log("From Email present:", !!fromEmail);
+      logger.error("Email service not configured", null, {
+        configuredProviders,
+        hasFromEmail: !!fromEmail,
+      });
+      logger.requestEnd(500, { reason: "email_not_configured" });
       return NextResponse.json(
         {
           success: false,
@@ -78,8 +81,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Validation passed. Preparing email message...");
-    console.log("Available providers:", configuredProviders);
+    logger.debug("Validation passed, preparing email", {
+      availableProviders: configuredProviders,
+    });
 
     // Prepare email message
     const msg = {
@@ -105,21 +109,34 @@ export async function POST(request: NextRequest) {
     };
 
     // Send email
-    logger.externalServiceStart("SendGrid", "send", {
+    logger.externalServiceStart("EmailService", "send", {
       to: msg.to,
       from: msg.from,
       subject: msg.subject,
+      availableProviders: configuredProviders,
     });
 
-    // Send email using email service
-    console.log("Attempting to send email...");
     const result = await emailService.send(msg);
 
     if (!result.success) {
+      logger.externalServiceError("EmailService", "send", new Error(result.error || "Failed to send email"), {
+        provider: result.provider,
+      });
       throw new Error(result.error || "Failed to send email");
     }
 
-    console.log("Email sent successfully via", result.provider);
+    logger.externalServiceSuccess("EmailService", "send", {
+      provider: result.provider,
+      messageId: result.messageId,
+    });
+
+    logger.info("Email sent successfully", {
+      businessGroup,
+      to,
+      subject: msg.subject,
+      provider: result.provider,
+    });
+    logger.requestEnd(200, { reason: "success" });
 
     return NextResponse.json(
       {
@@ -137,13 +154,11 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("\n=== Email Sending Error ===");
-    console.error("Error type:", error.constructor.name);
-    console.error("Error message:", error.message);
-    console.error("Error code:", error.code);
-    console.error("Full Error Object:", JSON.stringify(error, null, 2));
-    console.error("Stack Trace:", error.stack);
-    console.error("========================\n");
+    logger.requestError(500, error, {
+      endpoint: "/v1/messaging/send-email",
+      errorType: error.constructor.name,
+      errorCode: error.code,
+    });
 
     return NextResponse.json(
       {
